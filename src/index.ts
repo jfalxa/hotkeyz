@@ -2,10 +2,21 @@ type Keys = { [key: string]: Function }
 
 const MODIFIERS = ['meta', 'ctrl', 'alt', 'shift']
 
-function eventToKey(e: KeyboardEvent) {
-  const modifiers = MODIFIERS.filter(key => e[key + 'Key'] === true)
-  const key = e.key
+const FRIENDLY_KEYS = {
+  ' ': 'space',
+  Escape: 'esc',
+  ArrowTop: 'top',
+  ArrowRight: 'right',
+  ArrowBottom: 'bottom',
+  ArrowLeft: 'left'
+}
 
+function friendlyKey(key: string) {
+  return key in FRIENDLY_KEYS ? FRIENDLY_KEYS[key] : key.toLowerCase()
+}
+
+function toCombo(key: string, e: KeyboardEvent) {
+  const modifiers = MODIFIERS.filter(key => e[key + 'Key'] === true)
   return modifiers.length > 0 ? `${modifiers.join(' + ')} - ${key}` : key
 }
 
@@ -38,14 +49,33 @@ function normalizeCombos(keys: Keys): Keys {
   return normalized
 }
 
-export default function keyz(config: Keys) {
-  const keys = normalizeCombos(config)
+function initSequence(time: number) {
+  let sequence = ''
+  let timeout = null
+
+  return (chunk: string) => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+
+    sequence = sequence ? [sequence, chunk].join(' ') : chunk
+    timeout = setTimeout(() => (sequence = ''), time)
+
+    return sequence
+  }
+}
+
+export default function hotkeyz(config: Keys) {
+  const combos = normalizeCombos(config)
+  const sequence = initSequence(40)
 
   return (e: KeyboardEvent) => {
-    const key = eventToKey(e)
+    const key = friendlyKey(e.key)
+    const seq = sequence(key)
+    const combo = toCombo(seq, e)
 
-    if (key in keys) {
-      keys[key](e)
+    if (combo in combos) {
+      combos[combo](e)
     }
   }
 }
