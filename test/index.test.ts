@@ -43,3 +43,19 @@ it('throws an error when writing malformed key sequences', () => {
     'Missing key in combo: shift + alt'
   )
 })
+
+it('can list many combos at once', () => {
+  const callback = jest.fn()
+
+  const onKeyDown = keyz({
+    'a, b, shift - c': callback
+  })
+
+  onKeyDown(keydown('a'))
+  onKeyDown(keydown('b'))
+  onKeyDown(keydown('c'))
+  onKeyDown(keydown('c', { shiftKey: true }))
+  onKeyDown(keydown('d'))
+
+  expect(callback).toHaveBeenCalledTimes(3)
+})

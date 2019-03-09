@@ -9,7 +9,7 @@ function eventToKey(e: KeyboardEvent) {
   return modifiers.length > 0 ? `${modifiers.join(' + ')} - ${key}` : key
 }
 
-function normalizeKey(combo: string) {
+function normalizeCombo(combo: string) {
   if (combo.includes('+') && !combo.includes('-')) {
     throw new Error('Missing key in combo: ' + combo)
   } else if (!combo.includes('-')) {
@@ -26,18 +26,20 @@ function normalizeKey(combo: string) {
   return `${modifiers.join(' + ')} - ${key.trim()}`
 }
 
-function normalizeKeys(keys: Keys): Keys {
+function normalizeCombos(keys: Keys): Keys {
   const normalized: Keys = {}
 
-  Object.keys(keys).forEach(key => {
-    normalized[normalizeKey(key)] = keys[key]
-  })
+  Object.keys(keys).forEach(key =>
+    key.split(',').forEach(combo => {
+      normalized[normalizeCombo(combo)] = keys[key]
+    })
+  )
 
   return normalized
 }
 
 export default function keyz(config: Keys) {
-  const keys = normalizeKeys(config)
+  const keys = normalizeCombos(config)
 
   return (e: KeyboardEvent) => {
     const key = eventToKey(e)
