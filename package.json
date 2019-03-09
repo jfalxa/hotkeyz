@@ -1,7 +1,7 @@
 {
-  "name": "keyz",
-  "version": "1.2.5",
-  "repository": "https://github.com/jfalxa/systyle/tree/master/packages/moulinette",
+  "name": "hotkeyz",
+  "version": "0.0.1",
+  "repository": "https://github.com/jfalxa/hotkeyz",
   "main": "lib/index.umd.js",
   "module": "lib/index.esm.js",
   "typings": "lib/index.d.ts",

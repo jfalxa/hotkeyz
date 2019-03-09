@@ -8,7 +8,7 @@ export default {
   input: 'src/index.ts',
 
   output: [
-    { file: pkg.main, name: 'keys', format: 'umd' },
+    { file: pkg.main, name: 'hotkeyz', format: 'umd' },
     { file: pkg.module, format: 'es' }
   ],
 
