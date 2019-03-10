@@ -1,6 +1,6 @@
 # HotKeyz
 
-A tiny (0.7kB) dev-friendly keyboard event listener.
+A tiny (0.8kB) dev-friendly keyboard event listener.
 
 ## Installation
 
