@@ -104,6 +104,28 @@ it('can work with key sequences', () => {
   expect(callback).toHaveBeenCalledTimes(1)
 })
 
+it('can use modifiers in sequences', () => {
+  const callback = jest.fn()
+
+  const onKeyDown = hotkeyz({
+    'meta - k meta - l': callback
+  })
+
+  onKeyDown(keydown('k'))
+  onKeyDown(keydown('l'))
+
+  jest.runAllTimers()
+
+  expect(callback).not.toHaveBeenCalled()
+
+  onKeyDown(keydown('k', { metaKey: true }))
+  onKeyDown(keydown('l', { metaKey: true }))
+
+  jest.runAllTimers()
+
+  expect(callback).toHaveBeenCalledTimes(1)
+})
+
 it('has more friendly name for special keys', () => {
   const callback = jest.fn()
 

@@ -1,6 +1,6 @@
 # HotKeyz
 
-A tiny (0.6kB) keyboard event listener on steroids.
+A tiny (0.7kB) keyboard event listener on steroids.
 
 ## Installation
 
@@ -17,7 +17,18 @@ Combos are composed of modifiers and actual keys and should respect the followin
 - simple key: `{key}`
 - modifier: `{modifier} - {key}`
 - many modifiers: `{modifier} + {modifier} [+ ...] - {key}`
-- key sequence (waits 40ms between each press): `{key} {key} {key}`
+- many combos: `{combo}, {combo} [, ...]`
+- combo sequence (waits up to 40ms between each combo): `{combo} {combo} [...]`
+
+Valid modifiers are:
+
+- `meta`
+- `ctrl`
+- `alt`
+- `shift`
+
+For the arrow keys you can use `up`, `right`, `down`, `left`.
+For the escape key you can use `esc`.
 
 ```JS
 import hotkeyz from 'hotkeyz'
@@ -29,9 +40,11 @@ const listener = hotkeyz({
 
   'shift + alt + ctrl - esc': () => console.log('Pressed ESCAPE while holding SHIFT, ALT and CTRL.'),
 
+  'x, y': e => console.log('Pressed X or Y.', { key: e.key }),
+
   'a b c': () => console.log('Pressed A, then B, then C.'),
 
-  'x, y': e => console.log('Pressed X or Y.', { key: e.key })
+  'meta - k meta - up': e => console.log('Pressed k while holding META, then up while still holding META')
 })
 ```
 
