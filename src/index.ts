@@ -85,6 +85,9 @@ export default function hotkeyz(config: Keys) {
   const sequence = initSequence(40)
 
   return (e: KeyboardEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
     const combo = toCombo(e)
     const seq = sequence(combo)
 
