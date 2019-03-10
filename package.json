@@ -1,6 +1,6 @@
 {
   "name": "hotkeyz",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "repository": "https://github.com/jfalxa/hotkeyz",
   "main": "lib/index.umd.js",
   "module": "lib/index.esm.js",
