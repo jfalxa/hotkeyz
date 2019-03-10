@@ -18,7 +18,7 @@ Combos are composed of modifiers and actual keys and should respect the followin
 - modifier: `{modifier} - {key}`
 - many modifiers: `{modifier} + {modifier} [+ ...] - {key}`
 - many combos: `{combo}, {combo} [, ...]`
-- combo sequence (waits up to 40ms between each combo): `{combo} {combo} [...]`
+- combo sequence (waits up to 1s between each combo): `{combo} {combo} [...]`
 
 Valid modifiers are:
 

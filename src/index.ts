@@ -82,7 +82,7 @@ function initSequence(time: number) {
 
 export default function hotkeyz(config: Keys) {
   const combos = normalizeCombos(config)
-  const sequence = initSequence(40)
+  const sequence = initSequence(1000)
 
   return (e: KeyboardEvent) => {
     e.preventDefault()
