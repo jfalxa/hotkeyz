@@ -14,7 +14,8 @@ const FRIENDLY_KEYS = {
 
 const COMBO_RX = (() => {
   const word = `[\\w]+`
-  const separator = char => `[\\s]*\\${char}[\\s]*`
+  const space = `[\\s]*`
+  const separator = char => `${space}\\${char}${space}`
   const mods = `(${word}(${separator('+')}${word})*)`
   const combo = `((${mods}${separator('-')})?${word})`
 
@@ -66,24 +67,30 @@ function normalizeCombos(keys: Keys): Keys {
 }
 
 function initSequence(time: number) {
-  let sequence = ''
+  let current = ''
   let timeout = null
 
-  return (chunk: string) => {
+  function reset() {
+    current = ''
+  }
+
+  function sequence(chunk: string) {
     if (timeout) {
       clearTimeout(timeout)
     }
 
-    sequence = sequence ? [sequence, chunk].join(' ') : chunk
-    timeout = setTimeout(() => (sequence = ''), time)
+    current = current ? [current, chunk].join(' ') : chunk
+    timeout = setTimeout(reset, time)
 
-    return sequence
+    return current
   }
+
+  return { sequence, reset }
 }
 
 export default function hotkeyz(config: Keys) {
   const combos = normalizeCombos(config)
-  const sequence = initSequence(1000)
+  const { sequence, reset } = initSequence(1000)
 
   return (e: KeyboardEvent) => {
     e.preventDefault()
@@ -98,6 +105,7 @@ export default function hotkeyz(config: Keys) {
 
     if (seq in combos) {
       combos[seq](e)
+      reset()
     }
   }
 }
