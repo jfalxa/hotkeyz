@@ -1,6 +1,6 @@
 # HotKeyz
 
-A tiny (0.7kB) keyboard event listener on steroids.
+A tiny (0.7kB) dev-friendly keyboard event listener.
 
 ## Installation
 

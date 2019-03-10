@@ -2,6 +2,14 @@
   "name": "hotkeyz",
   "version": "0.1.0",
   "repository": "https://github.com/jfalxa/hotkeyz",
+  "description": "A tiny dev-friendly keyboard event listener.",
+  "keywords": [
+    "keyboard",
+    "events",
+    "listener",
+    "shortcuts",
+    "hotkey"
+  ],
   "main": "lib/index.umd.js",
   "module": "lib/index.esm.js",
   "typings": "lib/index.d.ts",
