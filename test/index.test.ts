@@ -3,7 +3,12 @@ import hotkeyz from '../src'
 jest.useFakeTimers()
 
 const keydown = (key: string, modifier: object = {}) =>
-  ({ key, ...modifier } as KeyboardEvent)
+  ({
+    key,
+    ...modifier,
+    preventDefault: () => {},
+    stopPropagation: () => {}
+  } as KeyboardEvent)
 
 it('reacts to a keyboard event', () => {
   const callback = jest.fn()
@@ -152,4 +157,17 @@ it('has more friendly name for special keys', () => {
   jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(6)
+})
+
+it('ignores single mod key presses', () => {
+  const callback = jest.fn()
+
+  const onKeyDown = hotkeyz({
+    'shift - a': callback
+  })
+
+  onKeyDown(keydown('shift'))
+  jest.runAllTimers()
+
+  expect(callback).not.toHaveBeenCalled()
 })

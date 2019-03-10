@@ -5,6 +5,7 @@ const MODS = ['meta', 'ctrl', 'alt', 'shift']
 const FRIENDLY_KEYS = {
   ' ': 'space',
   Escape: 'esc',
+  Control: 'ctrl',
   ArrowUp: 'up',
   ArrowRight: 'right',
   ArrowDown: 'down',
@@ -87,6 +88,10 @@ export default function hotkeyz(config: Keys) {
   return (e: KeyboardEvent) => {
     e.preventDefault()
     e.stopPropagation()
+
+    if (MODS.includes(friendlyKey(e.key))) {
+      return
+    }
 
     const combo = toCombo(e)
     const seq = sequence(combo)
