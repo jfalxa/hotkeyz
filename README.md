@@ -49,8 +49,6 @@ document.addEventListener('keydown', listener)
 
 ### React
 
-### Vanilla
-
 ```JS
 
 class Hotkeyz extends React.Component {
