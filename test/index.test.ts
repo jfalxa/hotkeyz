@@ -14,6 +14,7 @@ it('reacts to a keyboard event', () => {
   jest.runAllTimers()
 
   onKeyDown(keydown('up'))
+  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(1)
 })
@@ -27,6 +28,7 @@ it('reacts to a combo of keys', () => {
   jest.runAllTimers()
 
   onKeyDown(keydown('space', { shiftKey: true }))
+  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(1)
 })
@@ -42,6 +44,7 @@ it('reacts to a combos written in any order of keys', () => {
   jest.runAllTimers()
 
   onKeyDown(keydown('space', { altKey: true, shiftKey: true }))
+  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(1)
 })
@@ -72,6 +75,7 @@ it('can list many combos at once', () => {
   jest.runAllTimers()
 
   onKeyDown(keydown('d'))
+  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(3)
 })
@@ -83,9 +87,19 @@ it('can work with key sequences', () => {
     'a b c': callback
   })
 
+  onKeyDown(keydown('c'))
+  onKeyDown(keydown('b'))
+  onKeyDown(keydown('a'))
+
+  jest.runAllTimers()
+
+  expect(callback).not.toHaveBeenCalled()
+
   onKeyDown(keydown('a'))
   onKeyDown(keydown('b'))
   onKeyDown(keydown('c'))
+
+  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(1)
 })
