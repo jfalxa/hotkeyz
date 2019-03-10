@@ -4,6 +4,8 @@ const MODS = ['meta', 'ctrl', 'alt', 'shift']
 
 const FRIENDLY_KEYS = {
   ' ': 'space',
+  Delete: 'del',
+  Backspace: 'back',
   Escape: 'esc',
   Control: 'ctrl',
   ArrowUp: 'up',

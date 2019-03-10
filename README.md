@@ -27,8 +27,12 @@ Valid modifiers are:
 - `alt`
 - `shift`
 
-For the arrow keys you can use `up`, `right`, `down`, `left`.
-For the escape key you can use `esc`.
+And you get some aliases in order to write shorter combos:
+
+- For the arrow keys you can use `up`, `right`, `down`, `left`
+- For the escape key you can use `esc`
+- For the backspace you can use `back`
+- For the delete key you can use `del`
 
 ```JS
 import hotkeyz from 'hotkeyz'
