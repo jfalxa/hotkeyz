@@ -66,6 +66,4 @@ class Hotkeyz extends React.Component {
     return <div onKeyDown={this.listener} />
   }
 }
-
-document.addEventListener('keydown', listener)
 ```
