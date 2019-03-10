@@ -103,3 +103,31 @@ it('can work with key sequences', () => {
 
   expect(callback).toHaveBeenCalledTimes(1)
 })
+
+it('has more friendly name for special keys', () => {
+  const callback = jest.fn()
+
+  const onKeyDown = hotkeyz({
+    'up, right, down, left, esc, space': callback
+  })
+
+  onKeyDown(keydown('ArrowUp'))
+  jest.runAllTimers()
+
+  onKeyDown(keydown('ArrowRight'))
+  jest.runAllTimers()
+
+  onKeyDown(keydown('ArrowDown'))
+  jest.runAllTimers()
+
+  onKeyDown(keydown('ArrowLeft'))
+  jest.runAllTimers()
+
+  onKeyDown(keydown('Escape'))
+  jest.runAllTimers()
+
+  onKeyDown(keydown(' '))
+  jest.runAllTimers()
+
+  expect(callback).toHaveBeenCalledTimes(6)
+})

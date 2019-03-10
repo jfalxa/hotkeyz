@@ -5,9 +5,9 @@ const MODIFIERS = ['meta', 'ctrl', 'alt', 'shift']
 const FRIENDLY_KEYS = {
   ' ': 'space',
   Escape: 'esc',
-  ArrowTop: 'top',
+  ArrowUp: 'up',
   ArrowRight: 'right',
-  ArrowBottom: 'bottom',
+  ArrowDown: 'down',
   ArrowLeft: 'left'
 }
 

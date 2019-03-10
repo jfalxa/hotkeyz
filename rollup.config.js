@@ -1,6 +1,7 @@
 import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import typescript from 'rollup-plugin-typescript2'
+import filesize from 'rollup-plugin-filesize'
 
 const pkg = require('./package.json')
 
@@ -17,6 +18,7 @@ export default {
   plugins: [
     resolve(),
     commonjs({ include: 'node_modules/**' }),
-    typescript({ cacheRoot: '/tmp/.rpt2-cache' })
+    typescript({ cacheRoot: '/tmp/.rpt2-cache' }),
+    filesize()
   ]
 }
