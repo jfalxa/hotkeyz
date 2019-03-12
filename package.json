@@ -1,6 +1,6 @@
 {
   "name": "hotkeyz",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "repository": "https://github.com/jfalxa/hotkeyz",
   "description": "A tiny dev-friendly keyboard event listener.",
   "keywords": [
