@@ -1,14 +1,13 @@
+import keycode from 'keycode'
 import hotkeyz from '../src'
 
 jest.useFakeTimers()
 
-const keydown = (key: string, modifier: object = {}) =>
-  ({
-    key,
-    ...modifier,
-    preventDefault: () => {},
-    stopPropagation: () => {}
-  } as KeyboardEvent)
+const keydown = (key, modifier = {}) =>
+  new KeyboardEvent('keydown', {
+    keyCode: keycode(key),
+    ...modifier
+  })
 
 it('reacts to a keyboard event', () => {
   const callback = jest.fn()
@@ -131,23 +130,23 @@ it('can use modifiers in sequences', () => {
   expect(callback).toHaveBeenCalledTimes(1)
 })
 
-it('has more friendly name for special keys', () => {
+it('can use more friendly name for special keys', () => {
   const callback = jest.fn()
 
   const onKeyDown = hotkeyz({
     'up, right, down, left, esc, space': callback
   })
 
-  onKeyDown(keydown('ArrowUp'))
+  onKeyDown(keydown('up'))
   jest.runAllTimers()
 
-  onKeyDown(keydown('ArrowRight'))
+  onKeyDown(keydown('right'))
   jest.runAllTimers()
 
-  onKeyDown(keydown('ArrowDown'))
+  onKeyDown(keydown('down'))
   jest.runAllTimers()
 
-  onKeyDown(keydown('ArrowLeft'))
+  onKeyDown(keydown('down'))
   jest.runAllTimers()
 
   onKeyDown(keydown('Escape'))
@@ -170,4 +169,25 @@ it('ignores single mod key presses', () => {
   jest.runAllTimers()
 
   expect(callback).not.toHaveBeenCalled()
+})
+
+it('handles special characters', () => {
+  const callback = jest.fn()
+
+  const onKeyDown = hotkeyz({
+    'shift - /': callback,
+    'shift - .': callback,
+    'shift - `': callback
+  })
+
+  onKeyDown(keydown('/', { shiftKey: true }))
+  jest.runAllTimers()
+
+  onKeyDown(keydown('.', { shiftKey: true }))
+  jest.runAllTimers()
+
+  onKeyDown(keydown('`', { shiftKey: true }))
+  jest.runAllTimers()
+
+  expect(callback).toHaveBeenCalledTimes(3)
 })

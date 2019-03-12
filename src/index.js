@@ -1,22 +1,13 @@
-type Keys = { [key: string]: Function }
+import keycode from 'keycode'
+
+keycode.aliases.meta = 91
 
 const MODS = ['meta', 'ctrl', 'alt', 'shift']
-
-const FRIENDLY_KEYS = {
-  ' ': 'space',
-  Delete: 'del',
-  Backspace: 'back',
-  Escape: 'esc',
-  Control: 'ctrl',
-  ArrowUp: 'up',
-  ArrowRight: 'right',
-  ArrowDown: 'down',
-  ArrowLeft: 'left'
-}
+const MOD_KEYS = MODS.map(keycode)
 
 const COMBO_RX = (() => {
-  const word = `[\\w]+`
-  const space = `[\\s]*`
+  const word = `[^ ,+-]+`
+  const space = `\\s*`
   const separator = char => `${space}\\${char}${space}`
   const mods = `(${word}(${separator('+')}${word})*)`
   const combo = `((${mods}${separator('-')})?${word})`
@@ -24,18 +15,14 @@ const COMBO_RX = (() => {
   return new RegExp(combo, 'g')
 })()
 
-function friendlyKey(key: string) {
-  return key in FRIENDLY_KEYS ? FRIENDLY_KEYS[key] : key.toLowerCase()
-}
-
-function toCombo(e: KeyboardEvent) {
-  const key = friendlyKey(e.key)
+function eventToCombo(e) {
+  const key = keycode(e).replace(/\s+/g, '-')
   const mods = MODS.filter(mod => e[mod + 'Key'])
 
   return mods.length > 0 ? `${mods.join(' + ')} - ${key}` : key
 }
 
-function normalizeCombo(combos: string) {
+function normalizeCombo(combos) {
   const sequence = combos.match(COMBO_RX).map(combo => {
     if (MODS.includes(combo) || (combo.includes('+') && !combo.includes('-'))) {
       throw new Error('Missing key in combo: ' + combos)
@@ -56,8 +43,8 @@ function normalizeCombo(combos: string) {
   return sequence.join(' ')
 }
 
-function normalizeCombos(keys: Keys): Keys {
-  const normalized: Keys = {}
+function normalizeCombos(keys) {
+  const normalized = {}
 
   Object.keys(keys).forEach(key =>
     key.split(',').forEach(combo => {
@@ -68,7 +55,7 @@ function normalizeCombos(keys: Keys): Keys {
   return normalized
 }
 
-function initSequence(time: number) {
+function initSequence(time) {
   let current = ''
   let timeout = null
 
@@ -76,7 +63,7 @@ function initSequence(time: number) {
     current = ''
   }
 
-  function sequence(chunk: string) {
+  function sequence(chunk) {
     if (timeout) {
       clearTimeout(timeout)
     }
@@ -90,19 +77,19 @@ function initSequence(time: number) {
   return { sequence, reset }
 }
 
-export default function hotkeyz(config: Keys) {
+export default function hotkeyz(config) {
   const combos = normalizeCombos(config)
   const { sequence, reset } = initSequence(1000)
 
-  return (e: KeyboardEvent) => {
+  return e => {
     e.preventDefault()
     e.stopPropagation()
 
-    if (MODS.includes(friendlyKey(e.key))) {
+    if (MOD_KEYS.includes(e.keyCode)) {
       return
     }
 
-    const combo = toCombo(e)
+    const combo = eventToCombo(e)
     const seq = sequence(combo)
 
     if (seq in combos) {

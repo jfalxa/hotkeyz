@@ -1,12 +1,12 @@
 import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
-import typescript from 'rollup-plugin-typescript2'
+import babel from 'rollup-plugin-babel'
 import filesize from 'rollup-plugin-filesize'
 
 const pkg = require('./package.json')
 
 export default {
-  input: 'src/index.ts',
+  input: 'src/index.js',
 
   output: [
     { file: pkg.main, name: 'hotkeyz', format: 'umd' },
@@ -18,7 +18,7 @@ export default {
   plugins: [
     resolve(),
     commonjs({ include: 'node_modules/**' }),
-    typescript({ cacheRoot: '/tmp/.rpt2-cache' }),
+    babel({ exclude: 'node_modules/**' }),
     filesize()
   ]
 }
