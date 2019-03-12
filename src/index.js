@@ -1,12 +1,18 @@
 import keycode from 'keycode'
 
-keycode.aliases.meta = 91
+keycode.aliases.meta = keycode.codes.command
 
 const MODS = ['meta', 'ctrl', 'alt', 'shift']
 const MOD_KEYS = MODS.map(keycode)
 
+const SYMBOLS = {
+  plus: '+',
+  minus: '-',
+  comma: ','
+}
+
 const COMBO_RX = (() => {
-  const word = `[^ ,+-]+`
+  const word = `[^ ]+`
   const space = `\\s*`
   const separator = char => `${space}\\${char}${space}`
   const mods = `(${word}(${separator('+')}${word})*)`
@@ -15,86 +21,127 @@ const COMBO_RX = (() => {
   return new RegExp(combo, 'g')
 })()
 
-function eventToCombo(e) {
-  const key = keycode(e).replace(/\s+/g, '-')
-  const mods = MODS.filter(mod => e[mod + 'Key'])
+function isValid(combo) {
+  const isMod = MODS.includes(combo)
+  const hasMods = combo.includes('-')
 
-  return mods.length > 0 ? `${mods.join(' + ')} - ${key}` : key
+  return hasMods || !isMod
 }
 
-function normalizeCombo(combos) {
-  const sequence = combos.match(COMBO_RX).map(combo => {
-    if (MODS.includes(combo) || (combo.includes('+') && !combo.includes('-'))) {
-      throw new Error('Missing key in combo: ' + combos)
-    } else if (!combo.includes('-')) {
-      return combo.trim()
-    }
+function eventToCombos(event) {
+  const key = event.key
+  const keyCode = keycode(event).replace(/\s+/g, '-').toLowerCase() // prettier-ignore
+  const mods = MODS.filter(mod => event[mod + 'Key']).join(' + ')
 
-    const [modCombo, key] = combo.split('-')
+  // mods should be ignored when shifted key values are used, e.g: `A` shouldn't be `shift - A`
+  const keyCombo = mods && key === keyCode ? `${mods} - ${key}` : key
+  const keyCodeCombo = mods ? `${mods} - ${keyCode}` : keyCode
 
-    const mods = modCombo
-      .split('+')
-      .map(mod => mod.trim())
-      .sort((a, b) => MODS.indexOf(a) - MODS.indexOf(b))
-
-    return `${mods.join(' + ')} - ${key.trim()}`
-  })
-
-  return sequence.join(' ')
+  return [keyCombo, keyCodeCombo]
 }
 
-function normalizeCombos(keys) {
+function normalizeKey(raw) {
+  const key = raw.trim()
+  return key in SYMBOLS ? SYMBOLS[key] : key
+}
+
+function normalizeCombo(combo, _, combos) {
+  if (!isValid(combo)) {
+    throw new Error('Malformed combo: ' + combos.join(' '))
+  } else if (!combo.includes('-')) {
+    return normalizeKey(combo)
+  }
+
+  const modsAndKey = combo.split('-')
+
+  // sort modifiers in standard order
+  const mods = modsAndKey[0]
+    .split('+')
+    .map(mod => mod.trim())
+    .sort((a, b) => MODS.indexOf(a) - MODS.indexOf(b))
+    .join(' + ')
+
+  const key = normalizeKey(modsAndKey[1])
+
+  return `${mods} - ${key}`
+}
+
+function normalizeCommand(command) {
+  return command
+    .match(COMBO_RX)
+    .map(normalizeCombo)
+    .join(' ')
+}
+
+function normalizeHotkeys(hotkeys) {
   const normalized = {}
 
-  Object.keys(keys).forEach(key =>
-    key.split(',').forEach(combo => {
-      normalized[normalizeCombo(combo)] = keys[key]
+  Object.keys(hotkeys).forEach(command => {
+    command.split(',').forEach(cmd => {
+      normalized[normalizeCommand(cmd)] = hotkeys[command]
     })
-  )
+  })
 
   return normalized
 }
 
 function initSequence(time) {
-  let current = ''
+  let keys = ''
+  let keyCodes = ''
   let timeout = null
 
   function reset() {
-    current = ''
+    keys = ''
+    keyCodes = ''
   }
 
-  function sequence(chunk) {
+  return combos => {
     if (timeout) {
       clearTimeout(timeout)
     }
 
-    current = current ? [current, chunk].join(' ') : chunk
+    const key = combos[0]
+    const keyCode = combos[1]
+
+    keys = keys ? `${keys} ${key}` : key
+    keyCodes = keyCodes ? `${keyCodes} ${keyCode}` : keyCode
+
     timeout = setTimeout(reset, time)
 
-    return current
+    // avoid duplicate callback invocation for the first iteration of a sequence by not returning anything
+    return keys === key && keyCodes === keyCode ? null : [keys, keyCodes]
   }
-
-  return { sequence, reset }
 }
 
-export default function hotkeyz(config) {
-  const combos = normalizeCombos(config)
-  const { sequence, reset } = initSequence(1000)
+export default function hotkeyz(config, time = 1000) {
+  const hotkeys = normalizeHotkeys(config)
+  const sequence = initSequence(time)
 
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
+  const isCommand = command => command in hotkeys
 
-    if (MOD_KEYS.includes(e.keyCode)) {
+  return event => {
+    if (MOD_KEYS.includes(event.keyCode)) {
       return
     }
 
-    const combo = eventToCombo(e)
-    const seq = sequence(combo)
+    const combos = eventToCombos(event)
+    const sequences = sequence(combos)
 
-    if (seq in combos) {
-      combos[seq](e)
-      reset()
+    const command = combos.find(isCommand)
+    const seqCommand = sequences && sequences.find(isCommand)
+
+    // stop the event normal behaviour only if it matches a hotkey
+    if (command || seqCommand) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
+    if (command) {
+      hotkeys[command](event)
+    }
+
+    if (seqCommand) {
+      hotkeys[seqCommand](event)
     }
   }
 }

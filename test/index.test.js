@@ -3,9 +3,15 @@ import hotkeyz from '../src'
 
 jest.useFakeTimers()
 
+const codes = {
+  '?': keycode('/'),
+  '+': keycode('=')
+}
+
 const keydown = (key, modifier = {}) =>
   new KeyboardEvent('keydown', {
-    keyCode: keycode(key),
+    key,
+    keyCode: key in codes ? codes[key] : keycode(key),
     ...modifier
   })
 
@@ -15,10 +21,7 @@ it('reacts to a keyboard event', () => {
   const onKeyDown = hotkeyz({ space: callback })
 
   onKeyDown(keydown('space'))
-  jest.runAllTimers()
-
   onKeyDown(keydown('up'))
-  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(1)
 })
@@ -29,10 +32,7 @@ it('reacts to a combo of keys', () => {
   const onKeyDown = hotkeyz({ 'shift - space': callback })
 
   onKeyDown(keydown('space'))
-  jest.runAllTimers()
-
   onKeyDown(keydown('space', { shiftKey: true }))
-  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(1)
 })
@@ -45,17 +45,14 @@ it('reacts to a combos written in any order of keys', () => {
   })
 
   onKeyDown(keydown('space', { shiftKey: true }))
-  jest.runAllTimers()
-
   onKeyDown(keydown('space', { altKey: true, shiftKey: true }))
-  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(1)
 })
 
 it('throws an error when writing malformed key sequences', () => {
   expect(() => hotkeyz({ 'shift + alt': () => {} })).toThrow(
-    'Missing key in combo: shift + alt'
+    'Malformed combo: shift + alt'
   )
 })
 
@@ -67,27 +64,20 @@ it('can list many combos at once', () => {
   })
 
   onKeyDown(keydown('a'))
-  jest.runAllTimers()
-
   onKeyDown(keydown('b'))
-  jest.runAllTimers()
-
   onKeyDown(keydown('c'))
-  jest.runAllTimers()
-
   onKeyDown(keydown('c', { shiftKey: true }))
-  jest.runAllTimers()
-
   onKeyDown(keydown('d'))
-  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(3)
 })
 
 it('can work with key sequences', () => {
   const callback = jest.fn()
+  const callbackA = jest.fn()
 
   const onKeyDown = hotkeyz({
+    a: callbackA,
     'a b c': callback
   })
 
@@ -98,6 +88,7 @@ it('can work with key sequences', () => {
   jest.runAllTimers()
 
   expect(callback).not.toHaveBeenCalled()
+  expect(callbackA).toHaveBeenCalledTimes(1)
 
   onKeyDown(keydown('a'))
   onKeyDown(keydown('b'))
@@ -106,6 +97,7 @@ it('can work with key sequences', () => {
   jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(1)
+  expect(callbackA).toHaveBeenCalledTimes(2)
 })
 
 it('can use modifiers in sequences', () => {
@@ -138,22 +130,11 @@ it('can use more friendly name for special keys', () => {
   })
 
   onKeyDown(keydown('up'))
-  jest.runAllTimers()
-
   onKeyDown(keydown('right'))
-  jest.runAllTimers()
-
   onKeyDown(keydown('down'))
-  jest.runAllTimers()
-
   onKeyDown(keydown('down'))
-  jest.runAllTimers()
-
   onKeyDown(keydown('Escape'))
-  jest.runAllTimers()
-
   onKeyDown(keydown(' '))
-  jest.runAllTimers()
 
   expect(callback).toHaveBeenCalledTimes(6)
 })
@@ -166,9 +147,22 @@ it('ignores single mod key presses', () => {
   })
 
   onKeyDown(keydown('shift'))
-  jest.runAllTimers()
 
   expect(callback).not.toHaveBeenCalled()
+})
+
+it('simple hotkeys do not react when modifiers are used', () => {
+  const callback = jest.fn()
+
+  const onKeyDown = hotkeyz({ a: callback })
+
+  onKeyDown(keydown('a', { metaKey: true }))
+
+  expect(callback).toHaveBeenCalledTimes(0)
+
+  onKeyDown(keydown('a'))
+
+  expect(callback).toHaveBeenCalledTimes(1)
 })
 
 it('handles special characters', () => {
@@ -177,17 +171,54 @@ it('handles special characters', () => {
   const onKeyDown = hotkeyz({
     'shift - /': callback,
     'shift - .': callback,
-    'shift - `': callback
+    'shift - `': callback,
+    '?': callback
   })
 
   onKeyDown(keydown('/', { shiftKey: true }))
-  jest.runAllTimers()
-
   onKeyDown(keydown('.', { shiftKey: true }))
-  jest.runAllTimers()
-
   onKeyDown(keydown('`', { shiftKey: true }))
+  onKeyDown(keydown('?'))
+
+  expect(callback).toHaveBeenCalledTimes(4)
+})
+
+it('handles comma, + and - as keys', () => {
+  const callback = jest.fn()
+
+  const onKeyDown = hotkeyz({
+    plus: callback,
+    minus: callback,
+    comma: callback,
+    'plus minus': callback,
+    'shift - minus': callback
+  })
+
+  onKeyDown(keydown('+'))
+  onKeyDown(keydown('-'))
+  onKeyDown(keydown(','))
+  onKeyDown(keydown('-', { shiftKey: true }))
+
   jest.runAllTimers()
 
-  expect(callback).toHaveBeenCalledTimes(3)
+  expect(callback).toHaveBeenCalledTimes(5)
+})
+
+it('handles sequences of special chars', () => {
+  const callback1 = jest.fn()
+  const callback2 = jest.fn()
+
+  const onKeyDown = hotkeyz({
+    '?': callback1,
+    '? ? ?': callback2
+  })
+
+  onKeyDown(keydown('?', { shiftKey: true }))
+  onKeyDown(keydown('?', { shiftKey: true }))
+  onKeyDown(keydown('?', { shiftKey: true }))
+
+  jest.runAllTimers()
+
+  expect(callback1).toHaveBeenCalledTimes(3)
+  expect(callback2).toHaveBeenCalledTimes(1)
 })
