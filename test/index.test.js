@@ -4,6 +4,7 @@ import hotkeyz from '../src'
 jest.useFakeTimers()
 
 const codes = {
+  Å: keycode('a'),
   '?': keycode('/'),
   '+': keycode('=')
 }
@@ -52,7 +53,7 @@ it('reacts to a combos written in any order of keys', () => {
 
 it('throws an error when writing malformed key sequences', () => {
   expect(() => hotkeyz({ 'shift + alt': () => {} })).toThrow(
-    'Malformed combo: shift + alt'
+    'Missing key in combo: shift + alt'
   )
 })
 
@@ -183,15 +184,15 @@ it('handles special characters', () => {
   expect(callback).toHaveBeenCalledTimes(4)
 })
 
-it('handles comma, + and - as keys', () => {
+xit('handles +, - and , as keys', () => {
   const callback = jest.fn()
 
   const onKeyDown = hotkeyz({
-    plus: callback,
-    minus: callback,
-    comma: callback,
-    'plus minus': callback,
-    'shift - minus': callback
+    '+': callback,
+    '-': callback,
+    ',': callback,
+    '+ -': callback,
+    'shift - -': callback
   })
 
   onKeyDown(keydown('+'))
@@ -216,9 +217,53 @@ it('handles sequences of special chars', () => {
   onKeyDown(keydown('?', { shiftKey: true }))
   onKeyDown(keydown('?', { shiftKey: true }))
   onKeyDown(keydown('?', { shiftKey: true }))
+  onKeyDown(keydown('?', { shiftKey: true }))
 
   jest.runAllTimers()
 
-  expect(callback1).toHaveBeenCalledTimes(3)
+  expect(callback1).toHaveBeenCalledTimes(4)
   expect(callback2).toHaveBeenCalledTimes(1)
+})
+
+it('fallbacks to key method when keycode does not work', () => {
+  const callback = jest.fn()
+
+  const onKeyDown = hotkeyz({
+    '≠': callback
+  })
+
+  onKeyDown(keydown('≠'))
+
+  jest.runAllTimers()
+
+  expect(callback).toHaveBeenCalledTimes(1)
+})
+
+it('omits modifiers when using alternate key values', () => {
+  const callback1 = jest.fn()
+  const callback2 = jest.fn()
+  const callback3 = jest.fn()
+  const callback4 = jest.fn()
+  const callback5 = jest.fn()
+
+  const onKeyDown = hotkeyz({
+    Å: callback1,
+    a: callback2,
+    'alt + shift - a': callback3,
+    'alt + shift - Å': callback4,
+    'ctrl - Å': callback5
+  })
+
+  onKeyDown(keydown('Å', { metaKey: true }))
+  onKeyDown(keydown('Å', { metaKey: true, ctrlKey: true }))
+  onKeyDown(keydown('Å', { metaKey: true, ctrlKey: true, altKey: true }))
+  onKeyDown(keydown('Å', { metaKey: true, ctrlKey: true, altKey: true, shiftKey: true })) // prettier-ignore
+  onKeyDown(keydown('a', { metaKey: true, ctrlKey: true, altKey: true, shiftKey: true })) // prettier-ignore
+
+  jest.runAllTimers()
+
+  expect(callback1).toHaveBeenCalledTimes(4)
+  expect(callback2).not.toHaveBeenCalled()
+  expect(callback3).not.toHaveBeenCalled()
+  expect(callback4).not.toHaveBeenCalled()
 })
