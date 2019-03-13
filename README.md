@@ -134,3 +134,13 @@ hotkeyz({
   '? shift - / ?': () => {} // mixed => will never be detected
 })
 ```
+
+As the characters `,`, `+` and `-` are by the hotkey syntax, you may not use them directly as keys. If you want to do so, you should use their aliases `comma`, `plus` and `minus`
+
+```js
+hotkeyz({
+  comma: () => alert('pressed ,'),
+  plus: () => alert('pressed +'),
+  minus: () => alert('pressed -')
+})
+```

@@ -184,25 +184,33 @@ it('handles special characters', () => {
   expect(callback).toHaveBeenCalledTimes(4)
 })
 
-xit('handles +, - and , as keys', () => {
-  const callback = jest.fn()
+it('handles comma, + and - as keys', () => {
+  const callback1 = jest.fn()
+  const callback2 = jest.fn()
+  const callback3 = jest.fn()
+  const callback4 = jest.fn()
+  const callback5 = jest.fn()
 
   const onKeyDown = hotkeyz({
-    '+': callback,
-    '-': callback,
-    ',': callback,
-    '+ -': callback,
-    'shift - -': callback
+    comma: callback1,
+    '+': callback2,
+    '-': callback3,
+    '+ -': callback4,
+    'shift - -': callback5
   })
 
+  onKeyDown(keydown(','))
   onKeyDown(keydown('+'))
   onKeyDown(keydown('-'))
-  onKeyDown(keydown(','))
   onKeyDown(keydown('-', { shiftKey: true }))
 
   jest.runAllTimers()
 
-  expect(callback).toHaveBeenCalledTimes(5)
+  expect(callback1).toHaveBeenCalledTimes(1)
+  expect(callback2).toHaveBeenCalledTimes(1)
+  expect(callback3).toHaveBeenCalledTimes(1)
+  expect(callback4).toHaveBeenCalledTimes(1)
+  expect(callback5).toHaveBeenCalledTimes(1)
 })
 
 it('handles sequences of special chars', () => {

@@ -6,19 +6,31 @@ const MODS = ['meta', 'ctrl', 'alt', 'shift']
 const MOD_KEYS = MODS.map(keycode)
 
 const COMBO_RX = /((([^ ]+(\s*\+\s*[^ ]+)*)\s*\-\s*)?[^ ]+)/g
+const MEMBER_RX = /-\s*([^ ]+)$/
+
+const ALIASES = {
+  comma: ',',
+  plus: '+',
+  minus: '-'
+}
 
 function isValid(combo) {
   return combo.includes('-') || !MODS.includes(combo)
 }
 
-function normalizeCombo(combo, _, combos) {
+function normalizeKey(input) {
+  const key = input.trim()
+  return key in ALIASES ? ALIASES[key] : key
+}
+
+function normalizeCombo(combo, _, parts) {
   if (!isValid(combo)) {
-    throw new Error('Missing key in combo: ' + combos.join(' '))
+    throw new Error('Missing key in combo: ' + parts.join(' '))
   } else if (!combo.includes('-') || combo === '-') {
-    return combo.trim()
+    return normalizeKey(combo)
   }
 
-  const members = combo.split('-')
+  const members = combo.split(MEMBER_RX)
 
   // sort modifiers in standard order
   const mods = members[0]
@@ -27,7 +39,7 @@ function normalizeCombo(combo, _, combos) {
     .sort((a, b) => MODS.indexOf(a) - MODS.indexOf(b))
     .join(' + ')
 
-  const key = members[1].trim()
+  const key = normalizeKey(members[1])
 
   return `${mods} - ${key}`
 }
